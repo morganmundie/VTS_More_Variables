@@ -1,3 +1,4 @@
 .venv
 vtube_token.json
 __pycache__
+.env
