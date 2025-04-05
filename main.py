@@ -1,11 +1,13 @@
 import sys
-import requests
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout,
     QPushButton, QLineEdit, QLabel, QTextEdit
 )
 
 from variables import AppName
+from vtube_api import VTubeStudioAPI
+
+
 
 class AutonomousVtube(QWidget):
     def __init__(self):
@@ -13,30 +15,30 @@ class AutonomousVtube(QWidget):
         self.setWindowTitle(AppName)
         self.setGeometry(100, 100, 400, 300)
 
+        self.api = VTubeStudioAPI(
+            on_message_callback=self.display_message,
+            on_error_callback=self.display_error
+        )
 
-        # Layout
         layout = QVBoxLayout()
 
-        # Widgets
-        self.input = QLineEdit(self)
-        self.button = QPushButton("API Req", self)
-        self.button.clicked.connect(self.fetch_post)
+        self.output = QTextEdit()
+        self.output.setReadOnly(True)
+
+        self.btn_start = QPushButton("Start + Auto Auth")
+        self.btn_start.clicked.connect(self.api.auto_authenticate)
+
+        layout.addWidget(self.output)
+        layout.addWidget(self.btn_start)
 
         self.setLayout(layout)
 
-    def fetch_post(self):
+    def display_message(self, message):
+        self.output.append(f"[Response]\n{message}\n")
 
-        url = f""
-        try:
-            # response = requests.get(url)
-            # response.raise_for_status()
-            # data = response.json()
+    def display_error(self, error):
+        self.output.append(f"[Error]\n{error}\n")
 
-            # display = f"Title: {data['title']}\n\nBody:\n{data['body']}"
-            # self.result.setText(display)
-            print('Button pressed')
-        except requests.RequestException as e:
-            print(f"Error: {str(e)}")
 
 
 if __name__ == "__main__":
