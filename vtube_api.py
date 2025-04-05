@@ -1,8 +1,11 @@
 import json
 import threading
 import os
+import time
+import math
 from websocket import WebSocketApp
 from variables import AppName
+
 
 
 class VTubeStudioAPI:
@@ -13,9 +16,9 @@ class VTubeStudioAPI:
         self.ws = None
         self.on_message_callback = on_message_callback
         self.on_error_callback = on_error_callback
+        self.ws_thread = None  # Store the WebSocket thread for management
 
     def _load_token(self):
-        print(self.token_file)
         if os.path.exists(self.token_file):
             with open(self.token_file, "r") as f:
                 data = json.load(f)
@@ -41,7 +44,7 @@ class VTubeStudioAPI:
                 "messageType": "AuthenticationTokenRequest",
                 "data": {
                     "pluginName": AppName.strip(" "),
-                    "pluginDeveloper": "MorganMundie"
+                    "git ": "MorganMundie"
                 }
             }
             ws.send(json.dumps(payload))
@@ -75,20 +78,46 @@ class VTubeStudioAPI:
 
         self._run_ws(on_open)
 
+
+    def test_connect(self, id):
+        # Check if the WebSocket is already open
+        if self.ws and self.ws.sock and self.ws.sock.connected:
+            print("WebSocket is already connected.")
+            # Send the payload over the existing WebSocket connection
+            payload = {
+                "apiName": "VTubeStudioPublicAPI",
+                "apiVersion": "1.0",
+                "requestID": "SomeID",
+                "messageType": "CurrentModelRequest"
+            }
+            self.ws.send(json.dumps(payload))
+            print("Sent load")  # This should now print
+        else:
+            print("WebSocket is not connected. Attempting to connect...")
+            # If the WebSocket isn't connected, you can run the connection logic
+            self._run_ws(self.on_open, self.on_message)
+
+
     def _run_ws(self, on_open, on_message=None):
         def default_on_message(ws, message):
             if self.on_message_callback:
                 self.on_message_callback(message)
-            ws.close()
 
         def on_error(ws, error):
             if self.on_error_callback:
                 self.on_error_callback(str(error))
 
-        self.ws = WebSocketApp(
-            self.ws_url,
-            on_open=on_open,
-            on_message=on_message or default_on_message,
-            on_error=on_error
-        )
-        threading.Thread(target=self.ws.run_forever, daemon=True).start()
+        print(self.ws)
+        if not self.ws:  # Only create a WebSocket if it doesn't exist already
+            self.ws = WebSocketApp(
+                self.ws_url,
+                on_open=on_open,
+                on_message=on_message or default_on_message,
+                on_error=on_error
+            )
+
+            # Start WebSocket in a new thread
+            print(self.ws_thread)
+            if not self.ws_thread:
+                self.ws_thread = threading.Thread(target=self.ws.run_forever, daemon=False)
+                self.ws_thread.start()

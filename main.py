@@ -28,6 +28,14 @@ class AutonomousVtube(QWidget):
         self.btn_start = QPushButton("Start + Auto Auth")
         self.btn_start.clicked.connect(self.api.auto_authenticate)
 
+        self.btn_send_input = QPushButton("Send Input (Value = 1)")
+        self.btn_send_input.clicked.connect(lambda: self.api.send_input())
+
+        self.test = QPushButton("Test")
+        self.test.clicked.connect(lambda: self.api.test_connect(1))
+        
+        layout.addWidget(self.btn_send_input)
+        layout.addWidget(self.test)
         layout.addWidget(self.output)
         layout.addWidget(self.btn_start)
 
