@@ -5,7 +5,7 @@ import time
 import math
 from websocket import WebSocketApp
 from variables import AppName
-
+from equations import RandomWave
 
 
 class VTubeStudioAPI:
@@ -106,8 +106,17 @@ class VTubeStudioAPI:
             self._run_ws(self.on_open, self.on_message)
 
 
-    def start_continuous_input(self, input_id="MyNewParamName", interval=0.1):
+    def start_continuous_input(self, input_id="MyNewParamName", interval=0.05):
+        """
+        Starts a loop sending dynamic random wave output values through a WebSocket.
+        The loop automatically stops after 10 seconds.
+        """
         print("started")
+        
+        wave = RandomWave(seed=42)
+        # todo move to class
+        speed_multiplier = 1
+
         def send_input(val):
             print(f"sending {val}")
             payload = {
@@ -119,7 +128,7 @@ class VTubeStudioAPI:
                     "mode": "set",
                     "parameterValues": [
                         {
-                            "id": "MyNewParamName",
+                            "id": input_id,
                             "value": val
                         }
                     ]
@@ -127,23 +136,29 @@ class VTubeStudioAPI:
             }
             self.ws.send(json.dumps(payload))
 
-
-#fix this make it loop
         def send_loop():
             print("loop")
-            t = 0
+            start_time = time.time()
             while True:
-                value = (math.sin(t) + 1) / 2  # Range: 0 to 1
-                send_input(value)
+                # todo remove: for testing only
+                if time.time() - start_time > 25:
+                    break
+                
+                dt = interval * speed_multiplier
+                raw_value = wave.get_value(dt)
+                # Normalize to the range 0-1 (change later to dynamic range)
+                normalized_value = (raw_value + 1) / 2
+                send_input(normalized_value)
                 time.sleep(interval)
-                t += 0.1
 
-        # Start the input loop in the background only once
+        # Check if the WebSocket is connected before starting the loop.
         if self.ws and self.ws.sock and self.ws.sock.connected:
-            send_loop()
+            thread = threading.Thread(target=send_loop)
+            thread.daemon = True  
+            thread.start()
         else:
             print("WebSocket is not connected. Attempting to connect...")
-            # If the WebSocket isn't connected, you can run the connection logic
+            #no self on open todo fixme
             self._run_ws(self.on_open, self.on_message)
 
 
@@ -169,5 +184,5 @@ class VTubeStudioAPI:
             # Start WebSocket in a new thread
             print(self.ws_thread)
             if not self.ws_thread:
-                self.ws_thread = threading.Thread(target=self.ws.run_forever, daemon=False)
+                self.ws_thread = threading.Thread(target=self.ws.run_forever, daemon=True)
                 self.ws_thread.start()
