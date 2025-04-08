@@ -79,7 +79,7 @@ class VTubeStudioAPI:
         self._run_ws(on_open)
 
 
-    def test_connect(self, id):
+    def create_param(self, id):
         # Check if the WebSocket is already open
         if self.ws and self.ws.sock and self.ws.sock.connected:
             print("WebSocket is already connected.")
@@ -87,15 +87,65 @@ class VTubeStudioAPI:
             payload = {
                 "apiName": "VTubeStudioPublicAPI",
                 "apiVersion": "1.0",
-                "requestID": "SomeID",
-                "messageType": "CurrentModelRequest"
+                "requestID": "tesstcreate",
+                "messageType": "ParameterCreationRequest",
+                "data": {
+                    "parameterName": "MyNewParamName",
+                    "explanation": "This is my new parameter.",
+                    "min": -1,
+                    "max": 1,
+                    "defaultValue": 0
+                }
             }
+            print(payload)
             self.ws.send(json.dumps(payload))
             print("Sent load")  # This should now print
         else:
             print("WebSocket is not connected. Attempting to connect...")
             # If the WebSocket isn't connected, you can run the connection logic
             self._run_ws(self.on_open, self.on_message)
+
+
+    def start_continuous_input(self, input_id="MyNewParamName", interval=0.1):
+        print("started")
+        def send_input(val):
+            print(f"sending {val}")
+            payload = {
+                "apiName": "VTubeStudioPublicAPI",
+                "apiVersion": "1.0",
+                "requestID": "SomeID",
+                "messageType": "InjectParameterDataRequest",
+                "data": {
+                    "mode": "set",
+                    "parameterValues": [
+                        {
+                            "id": "MyNewParamName",
+                            "value": val
+                        }
+                    ]
+                }
+            }
+            self.ws.send(json.dumps(payload))
+
+
+#fix this make it loop
+        def send_loop():
+            print("loop")
+            t = 0
+            while True:
+                value = (math.sin(t) + 1) / 2  # Range: 0 to 1
+                send_input(value)
+                time.sleep(interval)
+                t += 0.1
+
+        # Start the input loop in the background only once
+        if self.ws and self.ws.sock and self.ws.sock.connected:
+            send_loop()
+        else:
+            print("WebSocket is not connected. Attempting to connect...")
+            # If the WebSocket isn't connected, you can run the connection logic
+            self._run_ws(self.on_open, self.on_message)
+
 
 
     def _run_ws(self, on_open, on_message=None):
