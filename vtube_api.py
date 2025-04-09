@@ -35,18 +35,21 @@ class VTubeStudioAPI:
         else:
             self.send_auth_token_request()
 
+#todo connect websocket after initial auth TEST
     def send_auth_token_request(self):
         def on_open(ws):
             payload = {
                 "apiName": "VTubeStudioPublicAPI",
                 "apiVersion": "1.0",
-                "requestID": "TokenRequest123",
+                "requestID": "TokenRequest",
                 "messageType": "AuthenticationTokenRequest",
                 "data": {
-                    "pluginName": AppName.strip(" "),
-                    "git ": "MorganMundie"
+                    "pluginName": AppName,
+                    "pluginDeveloper": "Morgan Mundie"
                 }
             }
+            print(f" App name {payload}")
+
             ws.send(json.dumps(payload))
 
         def on_message(ws, message):
@@ -69,8 +72,8 @@ class VTubeStudioAPI:
                 "requestID": "AuthRequest",
                 "messageType": "AuthenticationRequest",
                 "data": {
-                    "pluginName": AppName.strip(" "),
-                    "pluginDeveloper": "MorganMundie",
+                    "pluginName": AppName,
+                    "pluginDeveloper": "Morgan Mundie",
                     "authenticationToken": token
                 }
             }
@@ -79,8 +82,9 @@ class VTubeStudioAPI:
         self._run_ws(on_open)
 
 
-    def create_param(self, id):
+    def create_param(self, name, min, max):
         # Check if the WebSocket is already open
+        print(self)  #todo fixme this doesnt have a ws for some reason
         if self.ws and self.ws.sock and self.ws.sock.connected:
             print("WebSocket is already connected.")
             # Send the payload over the existing WebSocket connection
@@ -90,14 +94,14 @@ class VTubeStudioAPI:
                 "requestID": "tesstcreate",
                 "messageType": "ParameterCreationRequest",
                 "data": {
-                    "parameterName": "MyNewParamName",
+                    "parameterName": name,
                     "explanation": "This is my new parameter.",
-                    "min": -1,
-                    "max": 1,
+                    "min": min,
+                    "max": max,
                     "defaultValue": 0
                 }
             }
-            print(payload)
+            print(name)
             self.ws.send(json.dumps(payload))
             print("Sent load")  # This should now print
         else:
@@ -106,7 +110,7 @@ class VTubeStudioAPI:
             self._run_ws(self.on_open, self.on_message)
 
 
-    def start_continuous_input(self, input_id="MyNewParamName", interval=0.05):
+    def start_continuous_input(self, input_id="WaveParam", interval=0.05):
         """
         Starts a loop sending dynamic random wave output values through a WebSocket.
         The loop automatically stops after 10 seconds.
@@ -118,7 +122,7 @@ class VTubeStudioAPI:
         speed_multiplier = 1
 
         def send_input(val):
-            print(f"sending {val}")
+            # print(f"sending {val}")
             payload = {
                 "apiName": "VTubeStudioPublicAPI",
                 "apiVersion": "1.0",
@@ -162,7 +166,7 @@ class VTubeStudioAPI:
             self._run_ws(self.on_open, self.on_message)
 
 
-
+    #todo fix and check this
     def _run_ws(self, on_open, on_message=None):
         def default_on_message(ws, message):
             if self.on_message_callback:

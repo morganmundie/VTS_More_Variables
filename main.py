@@ -38,7 +38,7 @@ class AutonomousVtube(QWidget):
         self.btn_send_input.clicked.connect(lambda: self.api.start_continuous_input())
 
         self.test = QPushButton("Save")
-        self.test.clicked.connect(lambda: group.create_param())
+        self.test.clicked.connect(lambda: group.create_param(self.api))
 
         self.output = QTextEdit()
         self.output.setReadOnly(True)

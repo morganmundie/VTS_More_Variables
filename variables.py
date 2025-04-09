@@ -1,1 +1,1 @@
-AppName = 'Autonomous Inputs'
+AppName = "VDynamics"

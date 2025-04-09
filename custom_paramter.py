@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSignal
-from vtube_api import VTubeStudioAPI
 
 
 class ParamGroupWidget(QGroupBox):
@@ -13,7 +12,6 @@ class ParamGroupWidget(QGroupBox):
     def __init__(self, parent=None):
         super().__init__("Parameter", parent)
         self.init_ui()
-        self.api = VTubeStudioAPI()
 
     def init_ui(self):
         main_layout = QVBoxLayout()
@@ -92,7 +90,7 @@ class ParamGroupWidget(QGroupBox):
             "randomness": self.randomness_input.value()
         }
 
-    def create_param(self):
+    def create_param(self, api):
         print("Create")
         # todo create and save wave data too, below call is to create vtube studio param
-        self.api.create_param(self.name_input,self.min_input, self.max_input)
+        api.create_param(self.name_input.text(), self.min_input.value(), self.max_input.value())
