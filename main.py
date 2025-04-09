@@ -1,8 +1,12 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout,
-    QPushButton, QLineEdit, QLabel, QTextEdit
+    QPushButton, QLineEdit, QLabel, QApplication, QWidget, QLabel, QLineEdit, QComboBox, QSpinBox, QPushButton,
+    QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QTextEdit
 )
+from PyQt5.QtGui import QIcon
+
+from custom_paramter import ParamGroupWidget
 
 from variables import AppName
 from vtube_api import VTubeStudioAPI
@@ -13,7 +17,7 @@ class AutonomousVtube(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(AppName)
-        self.setGeometry(100, 100, 400, 300)
+        self.setGeometry(100, 100, 400, 500)
 
         self.api = VTubeStudioAPI(
             on_message_callback=self.display_message,
@@ -22,18 +26,23 @@ class AutonomousVtube(QWidget):
 
         layout = QVBoxLayout()
 
-        self.output = QTextEdit()
-        self.output.setReadOnly(True)
+        group = ParamGroupWidget()
+        # group.remove_requested.connect(self.remove_param_group)
+        # self.param_groups.append(group)
+        layout.addWidget(group)
 
         self.btn_start = QPushButton("Start + Auto Auth")
         self.btn_start.clicked.connect(self.api.auto_authenticate)
 
-        self.btn_send_input = QPushButton("Send Input (Value = 1)")
+        self.btn_send_input = QPushButton("Send Input")
         self.btn_send_input.clicked.connect(lambda: self.api.start_continuous_input())
 
-        self.test = QPushButton("Create")
-        self.test.clicked.connect(lambda: self.api.create_param(1))
-        
+        self.test = QPushButton("Save")
+        self.test.clicked.connect(lambda: group.create_param())
+
+        self.output = QTextEdit()
+        self.output.setReadOnly(True)
+
         layout.addWidget(self.btn_send_input)
         layout.addWidget(self.test)
         layout.addWidget(self.output)
