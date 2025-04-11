@@ -93,4 +93,6 @@ class ParamGroupWidget(QGroupBox):
     def create_param(self, api):
         print("Create")
         # todo create and save wave data too, below call is to create vtube studio param
+        # logic to create waves here
+        # waves are saved to params and param manager can get all
         api.create_param(self.name_input.text(), self.min_input.value(), self.max_input.value())

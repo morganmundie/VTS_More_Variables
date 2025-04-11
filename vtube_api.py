@@ -2,10 +2,9 @@ import json
 import threading
 import os
 import time
-import math
 from websocket import WebSocketApp
 from variables import AppName
-from equations import RandomWave
+from equations.random_wave import RandomWave
 
 
 class VTubeStudioAPI:
@@ -117,7 +116,7 @@ class VTubeStudioAPI:
         """
         print("started")
         
-        wave = RandomWave(seed=42)
+        wave = RandomWave(seed=42) # just a proof of concept, will be moved later
         # todo move to class
         speed_multiplier = 1
 

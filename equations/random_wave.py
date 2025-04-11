@@ -1,10 +1,9 @@
 import math
 import random
-# from noise import pnoise1  # pip install noise
-# import numpy as np
-# from scipy.interpolate import interp1d
 
-class RandomWave:
+from equation import Equation
+
+class RandomWave(Equation):
     """
     A randomized wave pattern
     """
@@ -56,5 +55,4 @@ class RandomWave:
         
         # Compute the wave output
         return self.amp * math.sin(self.position)
-    
     
