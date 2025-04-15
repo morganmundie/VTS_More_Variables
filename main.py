@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout,
     QPushButton, QLineEdit, QLabel, QApplication, QWidget, QLabel, QLineEdit, QComboBox, QSpinBox, QPushButton,
-    QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QTextEdit
+    QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QTextEdit, QScrollArea
 )
 from PyQt5.QtGui import QIcon
 
@@ -10,6 +10,8 @@ from custom_paramter import ParamGroupWidget
 
 from variables import AppName
 from vtube_api import VTubeStudioAPI
+
+from param_manager import ParamManager
 
 
 
@@ -24,12 +26,21 @@ class AutonomousVtube(QWidget):
             on_error_callback=self.display_error
         )
 
+        self.param_manager = ParamManager(VTubeStudioAPI)
+
         layout = QVBoxLayout()
 
-        group = ParamGroupWidget()
-        # group.remove_requested.connect(self.remove_param_group)
-        # self.param_groups.append(group)
-        layout.addWidget(group)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+
+        self.param_container = QWidget()
+        self.param_layout = QVBoxLayout()
+        self.param_container.setLayout(self.param_layout)
+        self.scroll_area.setWidget(self.param_container)
+
+        for param in self.param_manager.get_all_params():
+            group = ParamGroupWidget(param.name, param.min_val, param.max_val, param.wave_type)
+            self.param_layout.addWidget(group)
 
         self.btn_start = QPushButton("Start + Auto Auth")
         self.btn_start.clicked.connect(self.api.auto_authenticate)
@@ -43,6 +54,8 @@ class AutonomousVtube(QWidget):
         self.output = QTextEdit()
         self.output.setReadOnly(True)
 
+        #todo add button and logic to add a new (empty) param
+        layout.addWidget(self.scroll_area)
         layout.addWidget(self.btn_send_input)
         layout.addWidget(self.test)
         layout.addWidget(self.output)
