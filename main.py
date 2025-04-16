@@ -39,6 +39,7 @@ class AutonomousVtube(QWidget):
         self.scroll_area.setWidget(self.param_container)
 
         for param in self.param_manager.get_all_params():
+            #todo fix pgw to allow this info to be pulled
             group = ParamGroupWidget(param.name, param.min_val, param.max_val, param.wave_type)
             self.param_layout.addWidget(group)
 
@@ -46,10 +47,13 @@ class AutonomousVtube(QWidget):
         self.btn_start.clicked.connect(self.api.auto_authenticate)
 
         self.btn_send_input = QPushButton("Send Input")
-        self.btn_send_input.clicked.connect(lambda: self.api.start_continuous_input())
+        self.btn_send_input.clicked.connect(lambda: print(self.param_manager.params))
 
         self.test = QPushButton("Save")
-        self.test.clicked.connect(lambda: group.create_param(self.api))
+        self.test.clicked.connect(lambda: self.param_manager.save_params())
+
+        self.addButton = QPushButton("Add")
+        self.addButton.clicked.connect(lambda: self.add_param_to_ui())
 
         self.output = QTextEdit()
         self.output.setReadOnly(True)
@@ -57,6 +61,7 @@ class AutonomousVtube(QWidget):
         #todo add button and logic to add a new (empty) param
         layout.addWidget(self.scroll_area)
         layout.addWidget(self.btn_send_input)
+        layout.addWidget(self.addButton)
         layout.addWidget(self.test)
         layout.addWidget(self.output)
         layout.addWidget(self.btn_start)
@@ -68,6 +73,12 @@ class AutonomousVtube(QWidget):
 
     def display_error(self, error):
         self.output.append(f"[Error]\n{error}\n")
+
+    def add_param_to_ui(self):
+        self.param_manager.initialize_param()
+        group = ParamGroupWidget()
+        self.param_layout.addWidget(group)
+
 
 
 
